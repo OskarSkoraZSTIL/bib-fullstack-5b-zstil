@@ -7,4 +7,5 @@ urlpatterns = [
     path("endpoint/<int:book_id>/", views.endpoint_detail),
     path("endpoint/<str:filter>/<str:filVal>", views.endpoint_filter),
     path("info/", views.info),
+    path("statistics/", views.statistics),
 ]

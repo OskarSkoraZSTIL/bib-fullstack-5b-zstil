@@ -56,3 +56,46 @@ def info(request):
         },
         "uptime_seconds": round(time.time() - START_TIME, 1),
     })
+
+def statistics(request):
+    # ---- Functions ----
+    def countByVariable(listIQ, variableIQ, variable2IQ):
+        count = 0
+        for book in listIQ:
+            if book[variable2IQ] == variableIQ:
+                count += 1
+        return count
+
+    def getStockByVariable(listIQ, variableIQ, variable2IQ):
+        count = 0
+        for book in listIQ:
+            if book[variable2IQ] == variableIQ:
+                count += book["stock"]
+        return count
+
+    def getPotentialProfit(listIQ, variableIQ, variable2IQ):
+        profit = 0
+        for book in listIQ:
+            if book[variable2IQ] == variableIQ:
+                profit += book["price"] * book["stock"]
+        return round(profit, 2)
+
+    def getAveragePrice(listIQ):
+        price = 0
+        bookAmnt = 0
+        for book in listIQ:
+            price += book["price"]
+            bookAmnt += 1
+        return round(price/bookAmnt, 2)
+
+    # -------------------
+
+    return JsonResponse({
+        "bookAmountByCategory": sorted({p["category"] + f": {countByVariable(BOOKS,p["category"],"category")}" for p in BOOKS}),
+        "bookAmountByAuthor": sorted({p["author"] + f": {countByVariable(BOOKS,p["author"],"author")}" for p in BOOKS}),
+        "bookStockByCategory": sorted({p["category"] + f": {getStockByVariable(BOOKS, p["category"], "category")}" for p in BOOKS}),
+        "bookStockByTitle": sorted({p["title"] + f": {getStockByVariable(BOOKS, p["title"], "title")}" for p in BOOKS}),
+        "bookStockByAuthor": sorted({p["author"] + f": {getStockByVariable(BOOKS, p["author"], "author")}" for p in BOOKS}),
+        "potentialProfitByTitle": sorted({p["title"] + f": {getPotentialProfit(BOOKS, p["title"], "title")}" for p in BOOKS}),
+        "avgBookPrice": getAveragePrice(BOOKS)
+    })
