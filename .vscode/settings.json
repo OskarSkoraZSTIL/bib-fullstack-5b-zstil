@@ -1,6 +1,0 @@
-{
-    "chat.disableAIFeatures": true,
-    "search.searchView.keywordSuggestions": false,
-    "editor.inlineSuggest.minShowDelay": 400,
-    "workbench.settings.showAISearchToggle": false
-}
