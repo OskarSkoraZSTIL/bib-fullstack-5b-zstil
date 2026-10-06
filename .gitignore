@@ -1,1 +1,3 @@
 backend/venv
+backend/manage.py
+backend/db.sqlite3
