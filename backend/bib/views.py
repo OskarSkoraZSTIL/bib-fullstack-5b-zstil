@@ -9,3 +9,12 @@ def health(request):
 def endpoint(request):
     data = {"books": BOOKS}
     return JsonResponse(data)
+
+def endpoint_detail(request, book_id):
+    if book_id in BOOKS:
+            return JsonResponse(BOOKS[book_id])
+
+    return JsonResponse(
+        {"error": f"Book {book_id} not found"},
+        status=404,
+    )
