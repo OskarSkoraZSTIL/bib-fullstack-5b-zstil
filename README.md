@@ -372,6 +372,6 @@ http://127.0.0.1:8000/api/info/
 http://127.0.0.1:8000/api/statistics/
 ```
 
-### Zatrzymanie serwera
+## Zatrzymanie serwera
 
 Aby zatrzymać działający serwer Django, należy nacisnąć Ctrl + C. Środowisko wirtualne można następnie opuścić poleceniem ```deactivate```.
