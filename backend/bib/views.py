@@ -11,10 +11,26 @@ def endpoint(request):
     return JsonResponse(data)
 
 def endpoint_detail(request, book_id):
-    if book_id in BOOKS:
-            return JsonResponse(BOOKS[book_id])
+    for book in BOOKS:
+        if book["id"] == book_id:
+                return JsonResponse(book)
 
     return JsonResponse(
         {"error": f"Book {book_id} not found"},
         status=404,
     )
+
+def endpoint_filter(request, filter, filVal):
+    matchingBooks = []
+
+    for book in BOOKS:
+        if book[filter] == filVal:
+            matchingBooks.append(book)
+
+    if matchingBooks:
+        return JsonResponse({"books": matchingBooks})
+
+    return JsonResponse(
+          {"error": f"Catergory {filter} or value {filVal} could not be found"},
+          status=404,
+     )
