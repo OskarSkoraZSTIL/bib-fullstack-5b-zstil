@@ -4,29 +4,41 @@ import time
 import django
 
 from django.shortcuts import render
+from django.conf import settings
+from django.db import connection
 from django.http import JsonResponse
 from .data import BOOKS
+
+from .models import Category, Product
 
 APP_VERSION = "0.1.0"
 START_TIME = time.time()
 
 # Create your views here.
 def health(request):
-    return JsonResponse({"status":"ok"})
+    try:
+        connection.ensure_connection()
+    except Exception:
+        return json_response({"status": "error", "database": False}, status=503)
+    
+    return JsonResponse({"status":"ok", "database":True})
 
 def endpoint(request):
-    data = {"books": BOOKS}
-    return JsonResponse(data)
+    books = Product.objects.select_related("category")
+
+    category = request.GET.get("category")
+    if category:
+        books = books.filter(category__name=category)
+
+    return json_response([book_to_dict(p) for p in books])
 
 def endpoint_detail(request, book_id):
-    for book in BOOKS:
-        if book["id"] == book_id:
-                return JsonResponse(book)
+    try:
+        product = Product.objects.select_related("category")
+    except Product.DoesNotExist:
+        return json_response({"error": f"Product {book_id} not found"}, status=404)
 
-    return JsonResponse(
-        {"error": f"Book {book_id} not found"},
-        status=404,
-    )
+    return json_response(book_to_dict(product))
 
 def endpoint_filter(request, filter, filVal):
     matchingBooks = []
@@ -50,9 +62,12 @@ def info(request):
         "python_version": sys.version.split()[0],
         "django_version": django.get_version(),
         "data_source": {
-            "type": "in-memory list",
-            "record_count": len(BOOKS),
-            "categories": sorted({p["category"] for p in BOOKS}),
+            "type": "sqlite",
+            "engine": settings.DATABASES["default"]["ENGINE"].split(".")[-1],
+            "record_count": Product.objects.count(),
+            "categories": list(
+                Category.objects.order_by("name").values_list("name",flat=True)
+            ),
         },
         "uptime_seconds": round(time.time() - START_TIME, 1),
     })
@@ -99,3 +114,24 @@ def statistics(request):
         "potentialProfitByTitle": sorted({p["title"] + f": {getPotentialProfit(BOOKS, p["title"], "title")}" for p in BOOKS}),
         "avgBookPrice": getAveragePrice(BOOKS)
     })
+
+def json_response(data, status=200):
+    """Nasza wersja JsonResponse: obsługuje listy i nie ucieka polskich znaków"""
+    return JsonResponse(
+        data,
+        safe=False,
+        status=status,
+        json_dumps_params={"ensure_ascii": False}
+    )
+
+def book_to_dict(book):
+    """Zamienia obiekt modelu na słownik gotowy do wysłania jako JSON."""
+    return {
+        "id": book.id,
+        "name": book.name,
+        "author": book.author,
+        "price": str(book.price),
+        "stock": book.stock,
+        "category": book.category.name,
+        "created_at": book.created_at.isoformat(),
+    }
