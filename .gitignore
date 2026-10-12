@@ -1,3 +1,4 @@
 .vscode
+adminPswd.txt
 backend/venv/
 backend/db.sqlite3
