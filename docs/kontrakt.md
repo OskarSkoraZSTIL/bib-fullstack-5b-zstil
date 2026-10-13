@@ -227,7 +227,7 @@ W wersji `0.1.0`, po wpisaniu id przedmiotu w liście, pokazywał się sam przed
   "stock": 12
 }
 ```
-Natomiast po wpisaniu id który nie istnieje, np. `api/endpoint/20`, wypisywało:
+Natomiast po wpisaniu id który nie istnieje, np. `api/endpoint/20`, wypisywało bez żadnego kodu błędu:
 ```json
 {
   "error": "Book 20 not found"
