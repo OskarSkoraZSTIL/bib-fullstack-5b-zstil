@@ -18,11 +18,11 @@ START_TIME = time.time()
 # Create your views here.
 def health(request):
     try:
-        connection.ensure_connection
+        connection.ensure_connection()
     except Exception:
         return json_response({"status":"error", "database":False}, status=503)
 
-    return JsonResponse({"status":"ok"})
+    return JsonResponse({"status":"ok", "database": True})
 
 def endpoint(request):
     data = {"books": BOOKS}
