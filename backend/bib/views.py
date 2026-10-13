@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from .data import BOOKS
 from django.conf import settings
 from django.db import connection
+from django.db.models import Count, Sum, Avg, F, ExpressionWrapper, DecimalField
 
 from .models import Genre, Book
 
@@ -77,46 +78,63 @@ def info(request):
     })
 
 def statistics(request):
-    # ---- Functions ----
-    def countByVariable(listIQ, variableIQ, variable2IQ):
-        count = 0
-        for book in listIQ:
-            if book[variable2IQ] == variableIQ:
-                count += 1
-        return count
-
-    def getStockByVariable(listIQ, variableIQ, variable2IQ):
-        count = 0
-        for book in listIQ:
-            if book[variable2IQ] == variableIQ:
-                count += book["stock"]
-        return count
-
-    def getPotentialProfit(listIQ, variableIQ, variable2IQ):
-        profit = 0
-        for book in listIQ:
-            if book[variable2IQ] == variableIQ:
-                profit += book["price"] * book["stock"]
-        return round(profit, 2)
-
-    def getAveragePrice(listIQ):
-        price = 0
-        bookAmnt = 0
-        for book in listIQ:
-            price += book["price"]
-            bookAmnt += 1
-        return round(price/bookAmnt, 2)
-
-    # -------------------
-
     return JsonResponse({
-        "bookAmountByCategory": sorted({p["category"] + f": {countByVariable(BOOKS,p["category"],"category")}" for p in BOOKS}),
-        "bookAmountByAuthor": sorted({p["author"] + f": {countByVariable(BOOKS,p["author"],"author")}" for p in BOOKS}),
-        "bookStockByCategory": sorted({p["category"] + f": {getStockByVariable(BOOKS, p["category"], "category")}" for p in BOOKS}),
-        "bookStockByTitle": sorted({p["title"] + f": {getStockByVariable(BOOKS, p["title"], "title")}" for p in BOOKS}),
-        "bookStockByAuthor": sorted({p["author"] + f": {getStockByVariable(BOOKS, p["author"], "author")}" for p in BOOKS}),
-        "potentialProfitByTitle": sorted({p["title"] + f": {getPotentialProfit(BOOKS, p["title"], "title")}" for p in BOOKS}),
-        "avgBookPrice": getAveragePrice(BOOKS)
+        "bookAmountByCategory": [
+            f'{item["genre__name"]}: {item["count"]}'
+            for item in Book.objects.values("genre__name")
+            .annotate(count=Count("id"))
+            .order_by("genre__name")
+        ],
+
+        "bookAmountByAuthor": [
+            f'{item["author__name"]}: {item["count"]}'
+            for item in Book.objects.values("author__name")
+            .annotate(count=Count("id"))
+            .order_by("author__name")
+        ],
+
+        "bookStockByCategory": [
+            f'{item["genre__name"]}: {item["stock"]}'
+            for item in Book.objects.values("genre__name")
+            .annotate(stock=Sum("stock"))
+            .order_by("genre__name")
+        ],
+
+        "bookStockByTitle": [
+            f'{item["name"]}: {item["stock"]}'
+            for item in Book.objects.values("name")
+            .annotate(stock=Sum("stock"))
+            .order_by("name")
+        ],
+
+        "bookStockByAuthor": [
+            f'{item["author__name"]}: {item["stock"]}'
+            for item in Book.objects.values("author__name")
+            .annotate(stock=Sum("stock"))
+            .order_by("author__name")
+        ],
+
+        "potentialProfitByTitle": [
+            f'{item["name"]}: {round(item["profit"] or 0, 2)}'
+            for item in Book.objects.values("name")
+            .annotate(
+                profit=Sum(
+                    ExpressionWrapper(
+                        F("price") * F("stock"),
+                        output_field=DecimalField(
+                            max_digits=16,
+                            decimal_places=2,
+                        ),
+                    )
+                )
+            )
+            .order_by("name")
+        ],
+
+        "avgBookPrice": round(
+            Book.objects.aggregate(avg=Avg("price"))["avg"] or 0,
+            2,
+        ),
     })
 
 def json_response(data, status=200):
