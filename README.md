@@ -1,94 +1,96 @@
 # Biblioteka – Backend API
 
-Projekt przedstawia prosty backend API wykonany w technologii Django. Aplikacja udostępnia informacje o książkach, pozwala wyszukiwać książki po ID oraz filtrować je według wybranego pola.
+Projekt przedstawia prosty backend API wykonany w technologii Django. Aplikacja udostępnia informacje o książkach, pozwala wyszukiwać książki po ID oraz filtrować je według wybranego pola. Dane książek są przechowywane w bazie danych SQLite.
 
 ## Technologie
 
-Python 3.12
-Django 6.1.1
-Django JsonResponse
-Dane książek przechowywane w pamięci jako lista słowników
+- Python 3.12
+- Django 6.1.2
+- Django JsonResponse
+- SQLite
+- Django ORM – modele książek, autorów i gatunków
 
 ## Struktura projektu
-
-```bib-fullstack-5b-zstil/
+```
+bib-fullstack-5b-zstil/
 └── backend/
     ├── manage.py
     ├── requirements.txt
+    ├── db.sqlite3
     ├── core/
     │   ├── settings.py
     │   └── urls.py
     └── bib/
         ├── data.py
+        ├── models.py
+        ├── admin.py
         ├── urls.py
         └── views.py
 ```
-
 ## Endpointy API
-Bazowy adres API: ```http://127.0.0.1:8000/api/```
 
+Bazowy adres API: `http://127.0.0.1:8000/api/`
 
 |Metoda|Adres|Opis|Przykładowa odpowiedź|
-|------|-----|----|---------------------|
-|GET|/api/health/|Sprawdza, czy serwer działa|{"status": "ok"}|
-|GET|/api/endpoint/|Zwraca wszystkie książki|{"books": [...]}|
-|GET|/api/endpoint/<id>/|Zwraca książkę o podanym ID|{"id": 1, "title": "Ogniem i mieczem", ...}|
-|GET|/api/endpoint/<filter>/<value>|Zwraca wszystkie książki spełniające podany warunek|{"books": [...]}|
-|GET|/api/info/|Zwraca informacje o aplikacji i danych|{"application": "Shop API", ...}|
+|---|---|---|---|
+|GET|/api/health/|Sprawdza, czy serwer i baza danych działają|{"status": "ok", "database": true}
+|GET|/api/endpoint/|Zwraca listę książek z bazy danych|[{...}]|
+|GET|/api/endpoint/<id>/|Zwraca książkę o podanym ID|{"id": 1, "name": "...", ...}|
+|GET|/api/endpoint/<filter>/<value>|Filtruje książki według wybranego pola **(NIE SKOŃCZINE)**|{"books": [...]}|
+|GET|/api/info/|Zwraca informacje o aplikacji i bazie danych|{"application": "Shop API", ...}|
 |GET|/api/statistics/|Zwraca statystyki dotyczące książek|{"bookAmountByCategory": [...], ...}|
-
 ## Domeny
 ### 1. Health check
-```GET /api/health/```
-Sprawdza, czy backend działa poprawnie.
+`GET /api/health/`
+Sprawdza, czy backend działa poprawnie i czy można nawiązać połączenie z bazą danych.
 
 Przykład:
 ```
 GET http://127.0.0.1:8000/api/health/
 ```
-
 Odpowiedź:
 ```
 {
-    "status": "ok"
+    "status": "ok",
+    "database": true
 }
 ```
 
+W przypadku problemu z połączeniem z bazą danych endpoint zwraca status `HTTP 503 Service Unavailable`.
+
 ### 2. Lista wszystkich książek
-```GET /api/endpoint/```
-Zwraca wszystkie książki znajdujące się w danych aplikacji.
+
+`GET /api/endpoint/`
+Zwraca wszystkie książki znajdujące się w bazie danych. Możliwe jest również filtrowanie po gatunku za pomocą parametru genre.
 
 Przykład:
 ```
 GET http://127.0.0.1:8000/api/endpoint/
 ```
-
 Odpowiedź:
 ```
-{
-    "books": [
-        {
-            "id": 1,
-            "title": "Ogniem i mieczem",
-            "author": "Henryk Sienkiewicz",
-            "price": 39.99,
-            "category": "Powieść historyczna",
-            "stock": 12
-        },
-        {
-            "id": 2,
-            "title": "Przedwiośnie",
-            "author": "Stefan Żeromski",
-            "price": 27.5,
-            "category": "Powieść",
-            "stock": 8
-        }
-    ]
-}
+[
+    {
+        "id": 1,
+        "name": "Ogniem i mieczem",
+        "author": "Henryk Sienkiewicz",
+        "price": "39.99",
+        "stock": 12,
+        "genre": "Powieść historyczna",
+        "created_at": "2026-01-01T12:00:00+01:00"
+    }
+]
+```
+Przykład filtrowania po gatunku:
+```
+GET http://127.0.0.1:8000/api/endpoint/?genre=Powieść
 ```
 
+Odpowiedź zawiera listę książek należących do wskazanego gatunku.
+
 ### 3. Szczegóły książki
-```GET /api/endpoint/<id>/```
+
+`GET /api/endpoint/<id>/`
 Zwraca jedną książkę na podstawie jej ID.
 
 Przykład:
@@ -100,14 +102,14 @@ Odpowiedź:
 ```
 {
     "id": 8,
-    "title": "Zemsta",
+    "name": "Zemsta",
     "author": "Aleksander Fredro",
-    "price": 19.9,
-    "category": "Komedia",
-    "stock": 7
+    "price": "19.90",
+    "stock": 7,
+    "genre": "Komedia",
+    "created_at": "2026-01-01T12:00:00+01:00"
 }
 ```
-
 Jeżeli książka o podanym ID nie istnieje:
 ```
 {
@@ -115,30 +117,26 @@ Jeżeli książka o podanym ID nie istnieje:
 }
 ```
 
-Status HTTP:
-```
-404 Not Found
-```
+Status HTTP: `404 Not Found`
 
-### 4. Filtrowanie książek
-```GET /api/endpoint/<filter>/<value>```
-Pozwala wyszukiwać książki na podstawie wybranego pola.
+### 4. Filtrowanie książek <u>**(NIE DZIAŁA)**</u>
 
-Dostępne pola wynikają ze struktury książki:
-```
-id
-title
-author
-price
-category
-stock
-```
+`GET /api/endpoint/<filter>/<value>`
+
+Pozwala wyszukiwać książki na podstawie wybranego pola. Dostępne pola wynikają ze struktury danych książki:
+- id
+- title
+- author
+- price
+- category
+- stock
 
 #### Filtrowanie po kategorii
 
 Przykład:
-```GET http://127.0.0.1:8000/api/endpoint/category/Komedia```
-
+```
+GET http://127.0.0.1:8000/api/endpoint/category/Komedia
+```
 Odpowiedź:
 ```
 {
@@ -154,53 +152,42 @@ Odpowiedź:
     ]
 }
 ```
-
 #### Filtrowanie po autorze
-
 Przykład:
-```GET http://127.0.0.1:8000/api/endpoint/author/Henryk%20Sienkiewicz```
+```
+GET http://127.0.0.1:8000/api/endpoint/author/Henryk%20Sienkiewicz
+```
 Zwraca wszystkie książki Henryka Sienkiewicza.
 
-#### Filtrowanie po tytule
+#### iltrowanie po tytule
 
 Przykład:
-```GET http://127.0.0.1:8000/api/endpoint/title/Lalka```
+```
+GET http://127.0.0.1:8000/api/endpoint/title/Lalka
+```
 
-Zwraca książkę:
-```
-{
-    "books": [
-        {
-            "id": 3,
-            "title": "Lalka",
-            "author": "Bolesław Prus",
-            "price": 34.9,
-            "category": "Powieść realistyczna",
-            "stock": 15
-        }
-    ]
-}
-```
-Jeżeli nie znaleziono żadnej pasującej książki, API zwraca status 404.
+Zwraca książki pasujące do podanego tytułu. Jeżeli nie znaleziono żadnej pasującej książki, API zwraca status 404 Not Found.
 
 ### 5. Informacje o aplikacji
-```GET /api/info/```
-Zwraca informacje dotyczące aplikacji, wersji, używanej wersji Pythona i Django oraz danych znajdujących się w pamięci.
+```
+GET /api/info/
+```
+Zwraca informacje dotyczące aplikacji, wersji, używanej wersji Pythona i Django oraz danych znajdujących się w bazie danych.
 
 Przykład:
 ```
 GET http://127.0.0.1:8000/api/info/
 ```
-
 Przykładowa odpowiedź:
 ```
 {
     "application": "Shop API",
-    "app_version": "0.1.0",
+    "app_version": "0.2.0",
     "python_version": "3.12.0",
-    "django_version": "6.1.1",
+    "django_version": "6.1.2",
     "data_source": {
-        "type": "in-memory list",
+        "type": "sqlite",
+        "engine": "sqlite3",
         "record_count": 11,
         "categories": [
             "Dramat",
@@ -214,16 +201,18 @@ Przykładowa odpowiedź:
     "uptime_seconds": 25.4
 }
 ```
+Wartości w odpowiedzi zależą od aktualnej konfiguracji aplikacji, danych w bazie i czasu działania serwera.
 
 ### 6. Statystyki
-```GET /api/statistics/```
+```
+GET /api/statistics/
+```
 Zwraca statystyki dotyczące książek.
 
 Przykład:
 ```
 GET http://127.0.0.1:8000/api/statistics/
 ```
-
 Odpowiedź zawiera między innymi:
 - liczbę książek według kategorii,
 - liczbę książek według autora,
@@ -271,88 +260,90 @@ Przykładowa odpowiedź:
     "avgBookPrice": 30.35
 }
 ```
+Wartości statystyk są obliczane na podstawie aktualnych danych zapisanych w bazie danych.
 
 ## Uruchomienie backendu
 
 Instrukcja zakłada, że na komputerze jest zainstalowany Python 3.12.
 
 ### 1. Pobranie repozytorium
+
 Sklonuj repozytorium:
 ```
 git clone https://github.com/OskarSkoraZSTIL/bib-fullstack-5b-zstil.git
 ```
-Następnie przejdź do katalogu projektu: 
+Następnie przejdź do katalogu projektu:
 ```
 cd bib-fullstack-5b-zstil
 ```
-
 Przejdź do katalogu backendu:
 ```
 cd backend
 ```
-
 ### 2. Utworzenie środowiska wirtualnego
 
 Utwórz środowisko wirtualne:
 ```
 python -m venv venv
 ```
-
 ### 3. Aktywacja środowiska
-
 #### Windows
-
 W PowerShell:
 ```
 .\venv\Scripts\Activate.ps1
 ```
-
 W CMD:
 ```
 venv\Scripts\activate
 ```
-
-Po aktywacji powinien pojawić się przedrostek ```(venv)``` przed ścieżką w terminalu.
+Po aktywacji powinien pojawić się przedrostek (venv) przed ścieżką w terminalu.
 
 #### Linux / macOS
 ```
 source venv/bin/activate
 ```
-
 ### 4. Instalacja zależności
 
 Zainstaluj wymagane biblioteki:
 ```
 pip install -r requirements.txt
 ```
-
 Projekt wykorzystuje między innymi:
-- Django 6.1.1,
+- Django 6.1.2,
 - Asgiref 3.12.1,
-- Sqlparse 0.6.0, 
+- Sqlparse 0.6.0,
 - Tzdata 2026.5.
+### 5. Przygotowanie bazy danych
+Utwórz i zastosuj migracje Django:
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+Dane książek, autorów i gatunków są przechowywane w bazie SQLite.
 
-### 5. Uruchomienie serwera
+### 6. Uruchomienie serwera
 
 Będąc w katalogu backend, uruchom:
 ```
 python manage.py runserver
 ```
-Django uruchomi serwer developerski, domyślnie pod adresem ```http://127.0.0.1:8000/```
 
-### 6. Sprawdzenie działania
+Django uruchomi serwer deweloperski, domyślnie pod adresem `http://127.0.0.1:8000/.`
 
-W przeglądarce można wejść na: ```http://127.0.0.1:8000/api/health/```. Jeżeli wszystko działa prawidłowo, powinien pojawić się:
+### 7. Sprawdzenie działania
+
+W przeglądarce można wejść na `http://127.0.0.1:8000/api/health/.` Jeżeli wszystko działa prawidłowo, powinien pojawić się:
 ```
 {
-    "status": "ok"
+    "status": "ok",
+    "database": true
 }
 ```
+
 Można również sprawdzić listę książek:
 ```
 http://127.0.0.1:8000/api/endpoint/
 ```
-
 #### Przykładowe adresy do testowania
 
 Po uruchomieniu serwera można przetestować:
@@ -363,6 +354,8 @@ http://127.0.0.1:8000/api/endpoint/
 
 http://127.0.0.1:8000/api/endpoint/8/
 
+http://127.0.0.1:8000/api/endpoint/?genre=Powieść
+
 http://127.0.0.1:8000/api/endpoint/category/Komedia
 
 http://127.0.0.1:8000/api/endpoint/author/Henryk%20Sienkiewicz
@@ -371,7 +364,5 @@ http://127.0.0.1:8000/api/info/
 
 http://127.0.0.1:8000/api/statistics/
 ```
-
-## Zatrzymanie serwera
-
-Aby zatrzymać działający serwer Django, należy nacisnąć Ctrl + C. Środowisko wirtualne można następnie opuścić poleceniem ```deactivate```.
+#### Zatrzymanie serwera
+Aby zatrzymać działający serwer Django, należy nacisnąć Ctrl + C. Środowisko wirtualne można następnie opuścić poleceniem deactivate.
