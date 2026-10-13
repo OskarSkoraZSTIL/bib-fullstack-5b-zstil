@@ -86,5 +86,22 @@ BOOKS = [
         "price": 25.99,
         "category": "Epopeja",
         "stock": 13
+    },
+    { 
+        "id": 11,
+        "title": "Kamienie na szaniec",
+        "author": "Aleksander Kamiński",
+        "price": 32.99,
+        "category": "Literatura wojenna",
+        "stock": 10 
+    }, 
+    { 
+        "id": 12,
+        "title": "Balladyna",
+        "author": "Juliusz Słowacki",
+        "price": 24.99,
+        "category": "Dramat romantyczny",
+        "stock": 7 
     }
 ]
+
