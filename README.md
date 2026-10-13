@@ -35,8 +35,8 @@ Bazowy adres API: `http://127.0.0.1:8000/api/`
 |---|---|---|---|
 |GET|/api/health/|Sprawdza, czy serwer i baza danych działają|{"status": "ok", "database": true}
 |GET|/api/endpoint/|Zwraca listę książek z bazy danych|[{...}]|
-|GET|/api/endpoint/<id>/|Zwraca książkę o podanym ID|{"id": 1, "name": "...", ...}|
-|GET|/api/endpoint/<filter>/<value>|Filtruje książki według wybranego pola **(NIE SKOŃCZINE)**|{"books": [...]}|
+|GET|/api/endpoint/&lt;id&gt;/|Zwraca książkę o podanym ID|{"id": 1, "name": "...", ...}|
+|GET|/api/endpoint/&lt;filter&gt;/&lt;value&gt;|Filtruje książki według wybranego pola **(NIE SKOŃCZONE)**|{"books": [...]}|
 |GET|/api/info/|Zwraca informacje o aplikacji i bazie danych|{"application": "Shop API", ...}|
 |GET|/api/statistics/|Zwraca statystyki dotyczące książek|{"bookAmountByCategory": [...], ...}|
 ## Domeny
@@ -59,9 +59,13 @@ Odpowiedź:
 W przypadku problemu z połączeniem z bazą danych endpoint zwraca status `HTTP 503 Service Unavailable`.
 
 ### 2. Lista wszystkich książek
+Zanim można sprawdzić listę, trzeba najpierw stworzyć dane w Bazie Danych Django. Można dodać swoje dane manualnie, aczkolwiek aplikacja zawiera wbudowany plik z gotowymi danymi pod `backend/bib/data.py`. Sam plik w sobie nic nie robi - nie jest on używany gdziekolwiek w jakimkolwiek zanczącym sensie, po prostu przechowuje gotowe dane aby *zaimportować* je do bazy danych w Django.
 
-`GET /api/endpoint/`
-Zwraca wszystkie książki znajdujące się w bazie danych. Możliwe jest również filtrowanie po gatunku za pomocą parametru genre.
+Aby to zrobić, w CMD trzeba wpisać komendę:
+```
+python manage.py automate_records
+```
+Po wpisaniu komendy, aby sprawdzić rekordy w aplikacji a nie panelu admin'a, można wejść na `GET /api/endpoint/`. URL zwraca wszystkie książki znajdujące się w bazie danych. Możliwe jest również filtrowanie po gatunku za pomocą parametru genre.
 
 Przykład:
 ```
