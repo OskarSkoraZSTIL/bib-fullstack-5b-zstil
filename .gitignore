@@ -1,4 +1,8 @@
-.vscode
-adminPswd.txt
+# Folders
+.vscode/
 backend/venv/
+frontend/node_modules/
+
+# Files
+adminPswd.txt
 backend/db.sqlite3
