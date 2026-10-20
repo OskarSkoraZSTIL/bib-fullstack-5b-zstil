@@ -13,19 +13,34 @@ Projekt przedstawia prosty backend API wykonany w technologii Django. Aplikacja 
 ## Struktura projektu
 ```
 bib-fullstack-5b-zstil/
-└── backend/
-    ├── manage.py
-    ├── requirements.txt
-    ├── db.sqlite3
-    ├── core/
-    │   ├── settings.py
-    │   └── urls.py
-    └── bib/
-        ├── data.py
-        ├── models.py
-        ├── admin.py
-        ├── urls.py
-        └── views.py
+├── backend/
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── db.sqlite3
+│   ├── core/
+│   │   ├── settings.py
+│   │   └── urls.py
+│   └── bib/
+│       ├── data.py
+│       ├── models.py
+│       ├── admin.py
+│       ├── urls.py
+│       └── views.py
+├── frontend/
+│   ├── package.json
+│   ├── index.html
+│   └── src/
+│       ├── App.jsx
+│       ├── App.css
+│       ├── index.css
+│       ├── data.js
+│       ├── format.js
+│       ├── main.jsx
+│       └── components/
+│           ├── BookCard.jsx
+│           └── BookDetails.jsx
+├── docs/
+└── README.md
 ```
 ## Endpointy API
 
@@ -370,3 +385,24 @@ http://127.0.0.1:8000/api/statistics/
 ```
 #### Zatrzymanie serwera
 Aby zatrzymać działający serwer Django, należy nacisnąć Ctrl + C. Środowisko wirtualne można następnie opuścić poleceniem deactivate.
+
+## Uruchomienie frontendu
+
+Wymagany jest Node.js z npm. W nowym terminalu przejdź do katalogu frontendu:
+```
+cd frontend
+```
+
+Zainstaluj zależności:
+```
+npm install
+```
+
+Uruchom serwer deweloperski:
+```
+npm run dev
+```
+
+Frontend będzie dostępny pod adresem `http://localhost:5173/`.
+
+Dane książek są obecnie tymczasowo statyczne i znajdują się w pliku `frontend/src/data.js`.
