@@ -1,6 +1,6 @@
-# Biblioteka – Backend API
+# Biblioteka – aplikacja full-stack
 
-Projekt przedstawia prosty backend API wykonany w technologii Django. Aplikacja udostępnia informacje o książkach, pozwala wyszukiwać książki po ID oraz filtrować je według wybranego pola. Dane książek są przechowywane w bazie danych SQLite.
+Projekt składa się z backendu API wykonanego w technologii Django oraz frontendu w React. Backend udostępnia książki z bazy SQLite, pozwala wyszukiwać je po ID i generuje statystyki; dodatkowy endpoint filtrowania korzysta z przykładowych danych zapisanych w pliku. Frontend umożliwia przeglądanie, wyszukiwanie, filtrowanie i sortowanie książek; obecnie korzysta z tymczasowych danych statycznych.
 
 ## Technologie
 
@@ -9,6 +9,10 @@ Projekt przedstawia prosty backend API wykonany w technologii Django. Aplikacja 
 - Django JsonResponse
 - SQLite
 - Django ORM – modele książek, autorów i gatunków
+- React
+- Vite
+- JavaScript
+- Node.js i npm
 
 ## Struktura projektu
 ```
@@ -25,10 +29,15 @@ bib-fullstack-5b-zstil/
 │       ├── models.py
 │       ├── admin.py
 │       ├── urls.py
-│       └── views.py
+│       ├── views.py
+│       ├── migrations/
+│       └── management/commands/automate_records.py
 ├── frontend/
 │   ├── package.json
+│   ├── package-lock.json
 │   ├── index.html
+│   ├── vite.config.js
+│   ├── public/
 │   └── src/
 │       ├── App.jsx
 │       ├── App.css
@@ -36,10 +45,18 @@ bib-fullstack-5b-zstil/
 │       ├── data.js
 │       ├── format.js
 │       ├── main.jsx
+│       ├── assets/
 │       └── components/
 │           ├── BookCard.jsx
 │           └── BookDetails.jsx
 ├── docs/
+│   ├── README.MD
+│   ├── baza.md
+│   ├── importowanie_danych.md
+│   ├── kontrakt.md
+│   ├── orm.md
+│   ├── react.md
+│   └── statistics.md
 └── README.md
 ```
 ## Endpointy API
@@ -48,12 +65,12 @@ Bazowy adres API: `http://127.0.0.1:8000/api/`
 
 |Metoda|Adres|Opis|Przykładowa odpowiedź|
 |---|---|---|---|
-|GET|/api/health/|Sprawdza, czy serwer i baza danych działają|{"status": "ok", "database": true}
-|GET|/api/endpoint/|Zwraca listę książek z bazy danych|[{...}]|
-|GET|/api/endpoint/&lt;id&gt;/|Zwraca książkę o podanym ID|{"id": 1, "name": "...", ...}|
-|GET|/api/endpoint/&lt;filter&gt;/&lt;value&gt;|Filtruje książki według wybranego pola **(NIE SKOŃCZONE)**|{"books": [...]}|
-|GET|/api/info/|Zwraca informacje o aplikacji i bazie danych|{"application": "Shop API", ...}|
-|GET|/api/statistics/|Zwraca statystyki dotyczące książek|{"bookAmountByCategory": [...], ...}|
+|GET|/api/health/|Sprawdza, czy serwer i baza danych działają|`{"status": "ok", "database": true}`|
+|GET|/api/endpoint/|Zwraca książki z bazy danych; opcjonalnie filtruje po gatunku przez `?genre=`|`[{...}]`|
+|GET|/api/endpoint/&lt;id&gt;/|Zwraca książkę o podanym ID|`{"id": 1, "name": "...", ...}`|
+|GET|/api/endpoint/&lt;filter&gt;/&lt;value&gt;|Filtruje przykładowe dane z `backend/bib/data.py` po wskazanym polu|`{"books": [...]}`|
+|GET|/api/info/|Zwraca informacje o aplikacji i bazie danych|`{"application": "Shop API", ...}`|
+|GET|/api/statistics/|Zwraca statystyki dotyczące książek z bazy danych|`{"bookAmountByCategory": [...], ...}`|
 ## Domeny
 ### 1. Health check
 `GET /api/health/`
@@ -63,7 +80,7 @@ Przykład:
 ```
 GET http://127.0.0.1:8000/api/health/
 ```
-Odpowiedź:
+Przykładowa odpowiedź:
 ```
 {
     "status": "ok",
@@ -73,20 +90,20 @@ Odpowiedź:
 
 W przypadku problemu z połączeniem z bazą danych endpoint zwraca status `HTTP 503 Service Unavailable`.
 
-### 2. Lista wszystkich książek
-Zanim można sprawdzić listę, trzeba najpierw stworzyć dane w Bazie Danych Django. Można dodać swoje dane manualnie, aczkolwiek aplikacja zawiera wbudowany plik z gotowymi danymi pod `backend/bib/data.py`. Sam plik w sobie nic nie robi - nie jest on używany gdziekolwiek w jakimkolwiek zanczącym sensie, po prostu przechowuje gotowe dane aby *zaimportować* je do bazy danych w Django.
+### 2. Lista książek
+Endpoint zwraca książki zapisane w bazie danych. Można dodać je ręcznie w panelu admina albo zaimportować przykładowy zestaw z pliku `backend/bib/data.py` za pomocą komendy `automate_records`.
 
-Aby to zrobić, w CMD trzeba wpisać komendę:
+Aby zaimportować przykładowe dane, będąc w katalogu `backend`, uruchom:
 ```
 python manage.py automate_records
 ```
-Po wpisaniu komendy, aby sprawdzić rekordy w aplikacji a nie panelu admin'a, można wejść na `GET /api/endpoint/`. URL zwraca wszystkie książki znajdujące się w bazie danych. Możliwe jest również filtrowanie po gatunku za pomocą parametru genre.
+Następnie można wejść na `GET /api/endpoint/`. URL zwraca wszystkie książki znajdujące się w bazie danych. Możliwe jest również filtrowanie po gatunku za pomocą parametru `genre`.
 
 Przykład:
 ```
 GET http://127.0.0.1:8000/api/endpoint/
 ```
-Odpowiedź:
+Przykładowa odpowiedź:
 ```
 [
     {
@@ -138,11 +155,11 @@ Jeżeli książka o podanym ID nie istnieje:
 
 Status HTTP: `404 Not Found`
 
-### 4. Filtrowanie książek <u>**(NIE DZIAŁA)**</u>
+### 4. Filtrowanie książek (ograniczone)
 
-`GET /api/endpoint/<filter>/<value>`
+`GET /api/endpoint/<filter>/<value>` (bez końcowego ukośnika)
 
-Pozwala wyszukiwać książki na podstawie wybranego pola. Dostępne pola wynikają ze struktury danych książki:
+Endpoint wykonuje dokładne dopasowanie do przykładowych danych `backend/bib/data.py`, a nie do bazy danych. Filtrowanie działa dla tekstowych pól `title`, `author` i `category`. Pola `id`, `price` i `stock` są liczbowe, więc obecnie nie dopasują wartości przekazanej w adresie jako tekst. Dostępne klucze w danych to:
 - id
 - title
 - author
@@ -178,7 +195,7 @@ GET http://127.0.0.1:8000/api/endpoint/author/Henryk%20Sienkiewicz
 ```
 Zwraca wszystkie książki Henryka Sienkiewicza.
 
-#### iltrowanie po tytule
+#### Filtrowanie po tytule
 
 Przykład:
 ```
@@ -207,11 +224,13 @@ Przykładowa odpowiedź:
     "data_source": {
         "type": "sqlite",
         "engine": "sqlite3",
-        "record_count": 11,
+        "record_count": 12,
         "categories": [
             "Dramat",
+            "Dramat romantyczny",
             "Epopeja",
             "Komedia",
+            "Literatura wojenna",
             "Powieść",
             "Powieść historyczna",
             "Powieść realistyczna"
@@ -246,8 +265,10 @@ Przykładowa odpowiedź:
 {
     "bookAmountByCategory": [
         "Dramat: 1",
+        "Dramat romantyczny: 1",
         "Epopeja: 1",
         "Komedia: 1",
+        "Literatura wojenna: 1",
         "Powieść: 2",
         "Powieść historyczna: 4",
         "Powieść realistyczna: 1"
@@ -255,31 +276,67 @@ Przykładowa odpowiedź:
     "bookAmountByAuthor": [
         "Adam Mickiewicz: 1",
         "Aleksander Fredro: 1",
-        "Bolesław Prus: 1"
+        "Aleksander Kamiński: 1",
+        "Bolesław Prus: 1",
+        "Henryk Sienkiewicz: 4",
+        "Juliusz Słowacki: 1",
+        "Stanisław Wyspiański: 1",
+        "Stefan Żeromski: 1",
+        "Witold Gombrowicz: 1"
     ],
     "bookStockByCategory": [
         "Dramat: 6",
+        "Dramat romantyczny: 7",
         "Epopeja: 13",
-        "Komedia: 7"
+        "Komedia: 7",
+        "Literatura wojenna: 10",
+        "Powieść: 19",
+        "Powieść historyczna: 45",
+        "Powieść realistyczna: 15"
     ],
     "bookStockByTitle": [
+        "Balladyna: 7",
         "Ferdydurke: 11",
+        "Kamienie na szaniec: 10",
         "Krzyżacy: 9",
-        "Lalka: 15"
+        "Lalka: 15",
+        "Ogniem i mieczem: 12",
+        "Pan Tadeusz: 13",
+        "Potop: 10",
+        "Przedwiośnie: 8",
+        "Quo Vadis: 14",
+        "Wesele: 6",
+        "Zemsta: 7"
     ],
     "bookStockByAuthor": [
+        "Adam Mickiewicz: 13",
         "Aleksander Fredro: 7",
-        "Henryk Sienkiewicz: 45"
+        "Aleksander Kamiński: 10",
+        "Bolesław Prus: 15",
+        "Henryk Sienkiewicz: 45",
+        "Juliusz Słowacki: 7",
+        "Stanisław Wyspiański: 6",
+        "Stefan Żeromski: 8",
+        "Witold Gombrowicz: 11"
     ],
     "potentialProfitByTitle": [
+        "Balladyna: 174.93",
         "Ferdydurke: 324.5",
+        "Kamienie na szaniec: 329.9",
         "Krzyżacy: 330.75",
-        "Lalka: 523.5"
+        "Lalka: 523.5",
+        "Ogniem i mieczem: 479.88",
+        "Pan Tadeusz: 337.87",
+        "Potop: 420.0",
+        "Przedwiośnie: 220.0",
+        "Quo Vadis: 447.86",
+        "Wesele: 137.94",
+        "Zemsta: 139.3"
     ],
-    "avgBookPrice": 30.35
+    "avgBookPrice": 30.79
 }
 ```
-Wartości statystyk są obliczane na podstawie aktualnych danych zapisanych w bazie danych.
+Wartości statystyk są obliczane na podstawie aktualnych danych zapisanych w bazie danych. Powyższy przykład odpowiada przykładowym książkom po zaimportowaniu ich do pustej bazy.
 
 ## Uruchomienie backendu
 
@@ -333,9 +390,8 @@ Projekt wykorzystuje między innymi:
 - Sqlparse 0.6.0,
 - Tzdata 2026.5.
 ### 5. Przygotowanie bazy danych
-Utwórz i zastosuj migracje Django:
+Zastosuj migracje Django:
 ```
-python manage.py makemigrations
 python manage.py migrate
 ```
 Dane książek, autorów i gatunków są przechowywane w bazie SQLite.
@@ -386,6 +442,14 @@ http://127.0.0.1:8000/api/statistics/
 #### Zatrzymanie serwera
 Aby zatrzymać działający serwer Django, należy nacisnąć Ctrl + C. Środowisko wirtualne można następnie opuścić poleceniem deactivate.
 
+## Frontend
+
+Frontend to aplikacja React uruchamiana przez Vite. Można wyszukiwać książki po nazwie, filtrować je po gatunku oraz sortować po nazwie lub cenie rosnąco i malejąco. Kliknięcie karty otwiera widok szczegółów.
+
+Frontend obecnie nie pobiera danych z backendu. Książki są tymczasowo wpisane statycznie w `frontend/src/data.js`; backend i frontend należy uruchamiać osobno.
+
+Wartość gatunku w widoku szczegółów nie jest obecnie wyświetlana: komponent odczytuje pole `category`, podczas gdy dane frontendu zawierają pole `genre`.
+
 ## Uruchomienie frontendu
 
 Wymagany jest Node.js z npm. W nowym terminalu przejdź do katalogu frontendu:
@@ -404,5 +468,3 @@ npm run dev
 ```
 
 Frontend będzie dostępny pod adresem `http://localhost:5173/`.
-
-Dane książek są obecnie tymczasowo statyczne i znajdują się w pliku `frontend/src/data.js`.
