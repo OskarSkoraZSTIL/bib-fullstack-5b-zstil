@@ -1,18 +1,25 @@
 import { useState } from "react";
 import { BOOKS } from "./data";
 import BookCard from "./components/BookCard";
+import BookDetails from "./components/BookDetails"; 
+
 
 function App() {
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("all");
-
   const genres = ["all", ...new Set(BOOKS.map((p) => p.genre))];
-
+  const [selected, setSelected] = useState(null);
+  
+  
   const visible = BOOKS.filter((book) => {
     const matchesQuery = book.name.toLowerCase().includes(query.toLowerCase());
     const matchesGenre = genre === "all" || book.genre === genre;
     return matchesQuery && matchesGenre;
   });
+
+  if (selected) {
+    return <BookDetails book={selected} onBack={() => setSelected(null)} />;
+  }
 
   return (
     <main>
@@ -32,7 +39,7 @@ function App() {
 
       <div className="grid">
         {visible.map((book) => (
-          <BookCard key={book.id} book={book} />
+          <BookCard key={book.id} book={book} onSelect={setSelected} />
         ))}
       </div>
     </main>
