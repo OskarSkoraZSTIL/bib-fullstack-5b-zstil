@@ -1,4 +1,4 @@
-[
+export const BOOKS = [
   {
     "id": 12,
     "name": "Balladyna",
