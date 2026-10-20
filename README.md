@@ -1,4 +1,4 @@
-# Biblioteka – aplikacja full-stack
+# Biblioteka – Aplikacja Full-Stack
 
 Projekt składa się z backendu API wykonanego w technologii Django oraz frontendu w React. Backend udostępnia książki z bazy SQLite, pozwala wyszukiwać je po ID i generuje statystyki; dodatkowy endpoint filtrowania korzysta z przykładowych danych zapisanych w pliku. Frontend umożliwia przeglądanie, wyszukiwanie, filtrowanie i sortowanie książek; obecnie korzysta z tymczasowych danych statycznych.
 
