@@ -48,3 +48,23 @@ Vary: origin
 ```
 
 CORS nie jest zabezpieczeniem backendu przed odczytem, ponieważ to **sama przeglądarka internetowa wymusza zasady CORS**, blokując dostęp do danych kodowi JavaScript na niedozwolonej stronie, podczas gdy serwer zawsze zwraca pełną odpowiedź każdemu klientowi (np. `curl` czy Postman), który ten nagłówek zignoruje.
+
+Po wpisaniu `curl -i -X OPTIONS -H "Origin: http://localhost:5173" -H "Access-Control-Request-Method: POST" http://localhost:8000/api/products/` CMD zwrócił nam następującą odpowiedź:
+```
+HTTP/1.1 200 OK
+Date: Wed, 21 Oct 2026 09:15:08 GMT
+Server: WSGIServer/0.2 CPython/3.12.0
+content-length: 0
+Content-Type: text/html; charset=utf-8
+Vary: origin
+access-control-allow-origin: http://localhost:5173
+access-control-allow-headers: accept, authorization, content-type, user-agent, x-csrftoken, x-requested-with
+access-control-allow-methods: DELETE, GET, OPTIONS, PATCH, POST, PUT
+access-control-max-age: 86400
+```
+
+## Co przeglądarka robi krok po kroku na podstawie tej odpowiedzi?
+1. Przeglądarka porównuje swój bieżący adres (`http://localhost:5173`) z wartością `access-control-allow-origin`.
+2. Sprawdza, czy zamierzona metoda (`POST`) znajduje się w `access-control-allow-methods`.
+3. Sprawdza, czy nagłówki, które chce wysłać frontend, znajdują się w `access-control-allow-headers`.
+4. Ponieważ wszystkie warunki są spełnione, przeglądarka automatycznie i bezbłędnie wykonuje właściwe zapytanie `POST` z danymi z frontendu do backendu.
