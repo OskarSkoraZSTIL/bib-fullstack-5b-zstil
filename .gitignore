@@ -6,3 +6,4 @@ frontend/node_modules/
 # Files
 adminPswd.txt
 backend/db.sqlite3
+backend/.env
