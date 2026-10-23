@@ -442,6 +442,23 @@ http://127.0.0.1:8000/api/statistics/
 #### Zatrzymanie serwera
 Aby zatrzymać działający serwer Django, należy nacisnąć Ctrl + C. Środowisko wirtualne można następnie opuścić poleceniem deactivate.
 
+
+### 8. Zmienne środowiskowe — backend
+
+Konfiguracja backendu znajduje się w pliku `backend/.env`. Przed uruchomieniem aplikacji skopiuj `backend/.env.example` do `backend/.env` i uzupełnij wymagane wartości.
+
+| Zmienna | Opis | Przykładowa wartość |
+|---|---|---|
+| `SECRET_KEY` | Klucz bezpieczeństwa Django. Należy ustawić własny, poufny klucz. | `wstaw-wlasny-klucz` |
+| `DEBUG` | Włącza tryb debugowania. W środowisku lokalnym może mieć wartość `True`. | `True` |
+| `ALLOWED_HOSTS` | Lista hostów, z których można uzyskać dostęp do aplikacji; elementy oddzielone przecinkami. | `localhost,127.0.0.1` |
+| `CORS_ALLOWED_ORIGINS` | Lista originów frontendu dozwolonych przez CORS; adresy oddzielone przecinkami, bez końcowego ukośnika. | `http://localhost:5173,http://127.0.0.1:5173` |
+
+Plik `.env` zawiera lokalną konfigurację i nie powinien być dodawany do repozytorium. W repozytorium należy umieścić
+jedynie plik `backend/.env.example`.
+W środowisku produkcyjnym ustaw `DEBUG=False` i skonfiguruj własne wartości klucza, hostów oraz dozwolonych originów.
+
+
 ## Frontend
 
 Frontend to aplikacja React uruchamiana przez Vite. Można wyszukiwać książki po nazwie, filtrować je po gatunku oraz sortować po nazwie lub cenie rosnąco i malejąco. Kliknięcie karty otwiera widok szczegółów.
@@ -450,7 +467,7 @@ Frontend obecnie nie pobiera danych z backendu. Książki są tymczasowo wpisane
 
 Wartość gatunku w widoku szczegółów nie jest obecnie wyświetlana: komponent odczytuje pole `category`, podczas gdy dane frontendu zawierają pole `genre`.
 
-## Uruchomienie frontendu
+### 1. Uruchomienie frontendu
 
 Wymagany jest Node.js z npm. W nowym terminalu przejdź do katalogu frontendu:
 ```
@@ -468,3 +485,16 @@ npm run dev
 ```
 
 Frontend będzie dostępny pod adresem `http://localhost:5173/`.
+
+
+### 2. Zmienne środowiskowe — frontend
+
+Konfiguracja frontendu znajduje się w pliku `frontend/.env`.
+Przed uruchomieniem aplikacji skopiuj `frontend/.env.example`
+do `frontend/.env`.
+
+| Zmienna | Opis | Przykładowa wartość |
+|---|---|---|
+| `VITE_API_URL` | Bazowy adres API backendu wykorzystywany przez aplikację React. | `http://localhost:8000/api` |
+
+Zmienne dostępne w kodzie przeglądarkowym Vite muszą mieć prefiks `VITE_`. **Nie umieszczaj w pliku frontendu haseł, kluczy prywatnych ani innych sekretów**, ponieważ wartości te **mogą zostać udostępnione użytkownikom aplikacji.**
