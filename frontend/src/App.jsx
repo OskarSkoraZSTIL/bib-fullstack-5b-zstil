@@ -11,7 +11,7 @@ function App() {
   const [sortDirection, setSortDirection] = useState("asc");
   const genres = ["all", ...new Set(BOOKS.map((p) => p.genre))];
   const [selected, setSelected] = useState(null);
-  
+  const API_URL = import.meta.env.VITE_API_URL;
   
   const filteredBooks = BOOKS.filter((book) => {
     const matchesQuery = book.name.toLowerCase().includes(query.toLowerCase());
