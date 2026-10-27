@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-export async function fetchProducts(genre) {
+export async function fetchBooks(genre) {
   const url = new URL(`${API_URL}/endpoint/`);
 
   if (genre && genre !== "all") {

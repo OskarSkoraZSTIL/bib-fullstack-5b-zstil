@@ -6,8 +6,9 @@ function BookDetails({ book, onBack }) {
       <button onClick={onBack}>&larr; Wróć do listy</button>
 
       <h1>{book.name}</h1>
+      <h3>{book.author}</h3>
       <p className="price">{formatPrice(book.price)}</p>
-      <p>Kategoria: {book.category}</p>
+      <p>Gatunek: {book.genre}</p>
       <p>Na stanie: {book.stock} szt.</p>
     </article>
   );
