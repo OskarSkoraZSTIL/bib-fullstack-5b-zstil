@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { fetchBooks } from "./api";
 import BookCard from "./components/BookCard";
@@ -15,8 +15,8 @@ function App() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  useEffect(() => {
+
+  const tryDownloadingData = useCallback(async () => {
     async function load() {
       setLoading(true);
       setError(null);
@@ -24,17 +24,19 @@ function App() {
       try {
         const data = await fetchBooks();
         setBooks(data);
-      }
-      catch (err) {
+      } catch (err) {
         setError(err.message);
-      }
-      finally {
+      } finally {
         setLoading(false);
       }
     }
 
     load();
   }, []);
+
+  useEffect(() => {
+    tryDownloadingData();
+  }, [tryDownloadingData]);
 
   const visible = books.filter((book) => 
     book.name.toLowerCase().includes(query.toLowerCase())
@@ -58,9 +60,15 @@ function App() {
       {loading && <p>Ładowanie produktów...</p>}
 
       {error && (
-        <p className="error">
-          Nie udało się pobrać danych: {error}
-        </p>
+        <section>
+          <p className="error">
+            Nie udało się pobrać danych: {error}
+          </p>
+
+          <button onClick={tryDownloadingData}>
+            Spróbuj Ponownie
+          </button>
+        </section>
       )}
 
       {!loading && !error && visible.length === 0 && (
