@@ -38,9 +38,22 @@ function App() {
     tryDownloadingData();
   }, [tryDownloadingData]);
 
-  const visible = books.filter((book) => 
-    book.name.toLowerCase().includes(query.toLowerCase())
-  );
+  const genres = [...new Set(books.map((book) => book.genre))];
+
+  const filteredBooks = books.filter((book) => {
+    const matchesQuery = book.name.toLowerCase().includes(query.toLowerCase());
+    const matchesGenre = genre === "all" || book.genre === genre;
+    return matchesQuery && matchesGenre;
+  });
+
+  const visible = [...filteredBooks].sort((a, b) => {
+    const comparison =
+      sortBy === "price"
+        ? Number(a.price) - Number(b.price)
+        : a.name.localeCompare(b.name, "pl");
+
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
 
   if (selected) {
     return <BookDetails book={selected} onBack={() => setSelected(null)} />;
@@ -56,6 +69,25 @@ function App() {
       value={query}
       onChange={(event) => setQuery(event.target.value)}
       />
+      
+      <select value={genre} onChange={(event) => setGenre(event.target.value)}>
+        <option value="all">Wszystkie gatunki</option>
+        {genres.map((genreName) => (
+          <option key={genreName} value={genreName}>
+            {genreName}
+          </option>
+        ))}
+      </select>
+
+      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+        <option value="name">Nazwa</option>
+        <option value="price">Cena</option>
+      </select>
+
+      <select value={sortDirection} onChange={(event) => setSortDirection(event.target.value)}>
+        <option value="asc">Rosnąco</option>
+        <option value="desc">Malejąco</option>
+      </select>
 
       {loading && <p>Ładowanie produktów...</p>}
 
