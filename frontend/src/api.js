@@ -15,3 +15,13 @@ export async function fetchBooks(genre) {
 
   return response.json();
 }
+
+export async function fetchInfo() {
+  const response = await fetch(`${API_URL}/info/`);
+
+  if (!response.ok) {
+    throw new Error(`Serwer odpowiedział błędem ${response.status}`);
+  }
+
+  return response.json();
+}

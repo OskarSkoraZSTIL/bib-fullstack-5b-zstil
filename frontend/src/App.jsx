@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { fetchBooks } from "./api";
+import { fetchBooks, fetchInfo } from "./api";
 import BookCard from "./components/BookCard";
 import BookDetails from "./components/BookDetails";
 
 
 function App() {
   const [query, setQuery] = useState("");
+  const [genres, setGenres] = useState([]);
   const [genre, setGenre] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -17,28 +18,40 @@ function App() {
   const [error, setError] = useState(null);
 
   const tryDownloadingData = useCallback(async () => {
+    let ignore = false;
+
     async function load() {
       setLoading(true);
       setError(null);
 
       try {
-        const data = await fetchBooks();
-        setBooks(data);
+        const data = await fetchBooks(genre);
+        if (!ignore) setBooks(data);
       } catch (err) {
-        setError(err.message);
+        if (!ignore) setError(err.message);
       } finally {
-        setLoading(false);
+        if (!ignore) setLoading(false);
       }
     }
 
     load();
-  }, []);
+
+    return () => {
+      ignore = true;
+    }
+  }, [genre]);
 
   useEffect(() => {
     tryDownloadingData();
   }, [tryDownloadingData]);
 
-  const genres = [...new Set(books.map((book) => book.genre))];
+  useEffect(() => {
+  fetchInfo()
+    .then((info) => setGenres(info.data_source.categories))
+    .catch(() => setGenres([]));
+}, []);
+
+  // const genres = [...new Set(books.map((book) => book.genre))];
 
   const filteredBooks = books.filter((book) => {
     const matchesQuery = book.name.toLowerCase().includes(query.toLowerCase());
@@ -70,16 +83,16 @@ function App() {
       onChange={(event) => setQuery(event.target.value)}
       />
       
-      <select value={genre} onChange={(event) => setGenre(event.target.value)}>
+      {/* <select value={genre} onChange={(event) => setGenre(event.target.value)}>
         <option value="all">Wszystkie gatunki</option>
         {genres.map((genreName) => (
           <option key={genreName} value={genreName}>
             {genreName}
           </option>
         ))}
-      </select>
+      </select> */}
 
-      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+      {/* <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
         <option value="name">Nazwa</option>
         <option value="price">Cena</option>
       </select>
@@ -87,6 +100,13 @@ function App() {
       <select value={sortDirection} onChange={(event) => setSortDirection(event.target.value)}>
         <option value="asc">Rosnąco</option>
         <option value="desc">Malejąco</option>
+      </select> */}
+
+      <select value={genre} onChange={(event) => setGenre(event.target.value)}>
+        <option value="all">wszystkie kategorie</option>
+        {genres.map((name) => (
+          <option key={name} value={name}>{name}</option>
+        ))}
       </select>
 
       {loading && <p>Ładowanie produktów...</p>}
