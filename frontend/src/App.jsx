@@ -83,16 +83,14 @@ function App() {
       onChange={(event) => setQuery(event.target.value)}
       />
       
-      {/* <select value={genre} onChange={(event) => setGenre(event.target.value)}>
-        <option value="all">Wszystkie gatunki</option>
-        {genres.map((genreName) => (
-          <option key={genreName} value={genreName}>
-            {genreName}
-          </option>
+      <select value={genre} onChange={(event) => setGenre(event.target.value)}>
+        <option value="all">wszystkie kategorie</option>
+        {genres.map((name) => (
+          <option key={name} value={name}>{name}</option>
         ))}
-      </select> */}
+      </select>
 
-      {/* <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+      <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
         <option value="name">Nazwa</option>
         <option value="price">Cena</option>
       </select>
@@ -100,13 +98,6 @@ function App() {
       <select value={sortDirection} onChange={(event) => setSortDirection(event.target.value)}>
         <option value="asc">Rosnąco</option>
         <option value="desc">Malejąco</option>
-      </select> */}
-
-      <select value={genre} onChange={(event) => setGenre(event.target.value)}>
-        <option value="all">wszystkie kategorie</option>
-        {genres.map((name) => (
-          <option key={name} value={name}>{name}</option>
-        ))}
       </select>
 
       {loading && <p>Ładowanie produktów...</p>}
