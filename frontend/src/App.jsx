@@ -12,7 +12,8 @@ function App() {
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
   const [selected, setSelected] = useState(null);
-  
+  const [seletedID, setSelectedID] = useState(null);
+
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,8 +69,8 @@ function App() {
     return sortDirection === "asc" ? comparison : -comparison;
   });
 
-  if (selected) {
-    return <BookDetails book={selected} onBack={() => setSelected(null)} />;
+  if (seletedID) {
+    return <BookDetails bookID={seletedID} onBack={() => setSelectedID(null)} />;
   }
 
   return (
@@ -121,7 +122,7 @@ function App() {
       {!loading && !error && (
         <div className="grid">
           {visible.map((book) => (
-            <BookCard key={book.id} book={book} onSelect={setSelected} />
+            <BookCard key={book.id} book={book} onSelect={() => setSelectedID(book.id)} />
           ))}
         </div>
       )}

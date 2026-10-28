@@ -25,3 +25,17 @@ export async function fetchInfo() {
 
   return response.json();
 }
+
+export async function fetchBook(id) {
+  const response = await fetch(`${API_URL}/endpoint/${id}/`);
+
+  if (response.status === 404) {
+    throw new Error("Nie ma takiego produktu");
+  }
+
+  if (!response.ok) {
+    throw new Error(`Serwer odpowiedział błędem ${response.status}`);
+  }
+
+  return response.json();
+}
