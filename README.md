@@ -1,11 +1,11 @@
 # Biblioteka – Aplikacja Full-Stack
 
-Projekt składa się z backendu API wykonanego w technologii Django oraz frontendu w React. Backend udostępnia książki z bazy SQLite, pozwala wyszukiwać je po ID i generuje statystyki; dodatkowy endpoint filtrowania korzysta z przykładowych danych zapisanych w pliku. Frontend umożliwia przeglądanie, wyszukiwanie, filtrowanie i sortowanie książek; obecnie korzysta z tymczasowych danych statycznych.
+Projekt składa się z backendu API wykonanego w technologii Django oraz frontendu w React i Vite. Backend udostępnia książki zapisane w bazie SQLite, szczegóły pojedynczej książki, informacje o API oraz statystyki. Frontend pobiera dane i listę gatunków z backendu, a następnie umożliwia wyszukiwanie, filtrowanie i sortowanie książek. **Frontend wymaga działającego backendu API.**
 
 ## Technologie
 
 - Python 3.12
-- Django 6.1.2
+- Django 6.1.1 (wersja przypięta w `backend/requirements.txt`)
 - Django JsonResponse
 - SQLite
 - Django ORM – modele książek, autorów i gatunków
@@ -20,7 +20,7 @@ bib-fullstack-5b-zstil/
 ├── backend/
 │   ├── manage.py
 │   ├── requirements.txt
-│   ├── db.sqlite3
+│   ├── .env.example
 │   ├── core/
 │   │   ├── settings.py
 │   │   └── urls.py
@@ -35,6 +35,7 @@ bib-fullstack-5b-zstil/
 ├── frontend/
 │   ├── package.json
 │   ├── package-lock.json
+│   ├── .env.example
 │   ├── index.html
 │   ├── vite.config.js
 │   ├── public/
@@ -42,7 +43,7 @@ bib-fullstack-5b-zstil/
 │       ├── App.jsx
 │       ├── App.css
 │       ├── index.css
-│       ├── data.js
+│       ├── api.js
 │       ├── format.js
 │       ├── main.jsx
 │       ├── assets/
@@ -52,11 +53,16 @@ bib-fullstack-5b-zstil/
 ├── docs/
 │   ├── README.MD
 │   ├── baza.md
+│   ├── cors.md
+│   ├── dowod_na_stany.md
 │   ├── importowanie_danych.md
 │   ├── kontrakt.md
 │   ├── orm.md
 │   ├── react.md
-│   └── statistics.md
+│   ├── statistics.md
+│   └── wyjasnienie_zaktualizowanego_kodu_w_app.md
+├── assets/
+│   └── screenshots/
 └── README.md
 ```
 ## Endpointy API
@@ -385,16 +391,27 @@ Zainstaluj wymagane biblioteki:
 pip install -r requirements.txt
 ```
 Projekt wykorzystuje między innymi:
-- Django 6.1.2,
+- Django 6.1.1,
 - Asgiref 3.12.1,
 - Sqlparse 0.6.0,
-- Tzdata 2026.5.
+- Tzdata 2026.3.
 ### 5. Przygotowanie bazy danych
+Backend wczytuje konfigurację z `backend/.env`, a `SECRET_KEY` jest wymagany. Przed migracjami utwórz plik na podstawie przykładu (będąc w katalogu `backend`):
+```
+copy .env.example .env
+```
+W systemie Linux/macOS użyj `cp .env.example .env`. Uzupełnij `SECRET_KEY` w pliku `.env`; nie udostępniaj ani nie commituj tego pliku.
+
 Zastosuj migracje Django:
 ```
 python manage.py migrate
 ```
 Dane książek, autorów i gatunków są przechowywane w bazie SQLite.
+
+Jeżeli baza nie zawiera jeszcze książek, zaimportuj przykładowe rekordy:
+```
+python manage.py automate_records
+```
 
 ### 6. Uruchomienie serwera
 
@@ -454,18 +471,19 @@ Konfiguracja backendu znajduje się w pliku `backend/.env`. Przed uruchomieniem 
 | `ALLOWED_HOSTS` | Lista hostów, z których można uzyskać dostęp do aplikacji; elementy oddzielone przecinkami. | `localhost,127.0.0.1` |
 | `CORS_ALLOWED_ORIGINS` | Lista originów frontendu dozwolonych przez CORS; adresy oddzielone przecinkami, bez końcowego ukośnika. | `http://localhost:5173,http://127.0.0.1:5173` |
 
-Plik `.env` zawiera lokalną konfigurację i nie powinien być dodawany do repozytorium. W repozytorium należy umieścić
-jedynie plik `backend/.env.example`.
+Pliki `.env` zawierają lokalną konfigurację i nie powinny być dodawane do repozytorium. Przykładowe pliki konfiguracyjne to `backend/.env.example` i `frontend/.env.example`.
 W środowisku produkcyjnym ustaw `DEBUG=False` i skonfiguruj własne wartości klucza, hostów oraz dozwolonych originów.
 
 
 ## Frontend
 
-Frontend to aplikacja React uruchamiana przez Vite. Można wyszukiwać książki po nazwie, filtrować je po gatunku oraz sortować po nazwie lub cenie rosnąco i malejąco. Kliknięcie karty otwiera widok szczegółów.
+Frontend to aplikacja React uruchamiana przez Vite. Pobiera listę książek z `/api/endpoint/` oraz gatunki z `/api/info/`; wyszukiwanie, filtrowanie i sortowanie odbywają się po stronie frontendu. Szczegóły książki są pobierane z `/api/endpoint/<id>/`.
 
-Frontend obecnie nie pobiera danych z backendu. Książki są tymczasowo wpisane statycznie w `frontend/src/data.js`; backend i frontend należy uruchamiać osobno.
+**Backend musi działać, zanim uruchomisz frontend.** Uruchom obie części w osobnych terminalach, w tej kolejności:
+1. Skonfiguruj i uruchom backend zgodnie z sekcją „Uruchomienie backendu” powyżej. Pozostaw serwer Django działający pod `http://127.0.0.1:8000/`.
+2. W drugim terminalu skonfiguruj i uruchom frontend zgodnie z poniższą instrukcją. Otwórz adres Vite, zwykle `http://localhost:5173/`.
 
-Wartość gatunku w widoku szczegółów nie jest obecnie wyświetlana: komponent odczytuje pole `category`, podczas gdy dane frontendu zawierają pole `genre`.
+Jeśli frontend nie może połączyć się z API, sprawdź, czy backend nadal działa oraz czy `VITE_API_URL` i `CORS_ALLOWED_ORIGINS` są zgodne z używanymi adresami.
 
 ### 1. Uruchomienie frontendu
 
@@ -479,6 +497,12 @@ Zainstaluj zależności:
 npm install
 ```
 
+Utwórz plik konfiguracyjny przed uruchomieniem Vite:
+```
+copy .env.example .env
+```
+W systemie Linux/macOS użyj `cp .env.example .env`.
+
 Uruchom serwer deweloperski:
 ```
 npm run dev
@@ -489,12 +513,10 @@ Frontend będzie dostępny pod adresem `http://localhost:5173/`.
 
 ### 2. Zmienne środowiskowe — frontend
 
-Konfiguracja frontendu znajduje się w pliku `frontend/.env`.
-Przed uruchomieniem aplikacji skopiuj `frontend/.env.example`
-do `frontend/.env`.
+Frontend odczytuje konfigurację z `frontend/.env`, utworzonego z `frontend/.env.example` zgodnie z instrukcją powyżej.
 
 | Zmienna | Opis | Przykładowa wartość |
 |---|---|---|
-| `VITE_API_URL` | Bazowy adres API backendu wykorzystywany przez aplikację React. | `http://localhost:8000/api` |
+| `VITE_API_URL` | Bazowy adres API backendu. Frontend dokleja do niego ścieżki endpointów, takie jak `/endpoint/` i `/info/`. Nie dodawaj końcowego ukośnika. | `http://localhost:8000/api` |
 
-Zmienne dostępne w kodzie przeglądarkowym Vite muszą mieć prefiks `VITE_`. **Nie umieszczaj w pliku frontendu haseł, kluczy prywatnych ani innych sekretów**, ponieważ wartości te **mogą zostać udostępnione użytkownikom aplikacji.**
+Po zmianie `VITE_API_URL` uruchom ponownie serwer Vite. Zmienne dostępne w kodzie przeglądarkowym Vite muszą mieć prefiks `VITE_`. **Nie umieszczaj w pliku frontendu haseł, kluczy prywatnych ani innych sekretów**, ponieważ wartości te mogą zostać udostępnione użytkownikom aplikacji.
