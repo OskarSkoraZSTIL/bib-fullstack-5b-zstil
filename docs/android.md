@@ -172,3 +172,12 @@ RecyclerView ponownie wykorzystuje utworzone już widoki podczas przewijania lis
 Gdyby findViewById znajdowało się w onBindViewHolder, byłoby wykonywane wielokrotnie, co niepotrzebnie obciążałoby aplikację i mogłoby spowalniać przewijanie listy.
 
 Dzięki umieszczeniu go w konstruktorze ViewHolder elementy są wyszukiwane tylko raz, a później adapter korzysta z zapamiętanych referencji i zmienia jedynie ich zawartość.
+
+## Porównanie technologii React i Android
+|Problem|React|Android (Java)|
+|---|---|---|
+|Wyświetlenie listy|Listę elementów wyświetlam za pomocą metody map(), która tworzy komponent dla każdego elementu tablicy.|Listę wyświetlam za pomocą RecyclerView, który wykorzystuje adapter do tworzenia i ponownego używania widoków.|
+|Reakcja na kliknięcie|Obsługę kliknięcia realizuję przez przekazanie funkcji do właściwości onClick elementu.|Obsługę dotknięcia realizuję przez setOnClickListener(), który wywołuje przekazaną funkcję lub metodę.|
+|Przejście do szczegółów|Szczegóły elementu wyświetlam na podstawie jego identyfikatora, korzystając z nawigacji między widokami lub trasami aplikacji.|Szczegóły wyświetlam w osobnej aktywności (Activity), przekazując identyfikator produktu przez Intent.|
+|Formatowanie liczby|Liczbę formatuję za pomocą Intl.NumberFormat z ustawieniem odpowiedniej lokalizacji, np. pl-PL.|Liczbę formatuję za pomocą klasy NumberFormat i ustawienia lokalizacji pl-PL.|
+|Odświeżenie widoku po zmianie danych|Po zmianie stanu za pomocą useState React automatycznie ponownie renderuje komponent.|Po zmianie danych listy wywołuję adapter.notifyDataSetChanged(), aby poinformować RecyclerView o konieczności odświeżenia widoku.|
