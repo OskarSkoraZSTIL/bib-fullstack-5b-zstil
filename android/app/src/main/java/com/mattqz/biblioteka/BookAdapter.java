@@ -1,5 +1,6 @@
 package com.mattqz.biblioteka;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,6 +65,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
             if (book.getStock() == 0) {
                 stockView.setText("Niedostępny");
+                stockView.setTextColor(Color.RED);
             } else {
                 stockView.setText("Na stanie: " + book.getStock() + " szt.");
             }
