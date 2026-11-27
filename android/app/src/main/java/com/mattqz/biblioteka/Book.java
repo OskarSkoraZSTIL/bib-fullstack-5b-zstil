@@ -1,6 +1,6 @@
-package com.example.sklep;
+package com.mattqz.biblioteka;
 
-public class Product {
+public class Book {
 
     private final int id;
     private final String name;
@@ -9,7 +9,7 @@ public class Product {
     private final int stock;
     private final String genre;
 
-    public Product(int id, String name, String author,
+    public Book(int id, String name, String author,
                    String price, int stock, String genre) {
         this.id = id;
         this.name = name;

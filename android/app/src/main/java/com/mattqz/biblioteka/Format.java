@@ -1,4 +1,4 @@
-package com.example.sklep;
+package com.mattqz.biblioteka;
 
 import java.text.NumberFormat;
 import java.util.Locale;

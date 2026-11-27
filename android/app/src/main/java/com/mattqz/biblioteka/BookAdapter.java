@@ -1,4 +1,4 @@
-package com.example.sklep;
+package com.mattqz.biblioteka;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,9 +57,9 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
             stockView = itemView.findViewById(R.id.bookStock);
         }
 
-        void bind(Books book, OnBookClickListener listener) {
+        void bind(Book book, OnBookClickListener listener) {
             nameView.setText(book.getName());
-            categoryView.setText(book.getCategory());
+            categoryView.setText(book.getGenre());
             priceView.setText(Format.price(book.getPrice()));
 
             if (book.getStock() == 0) {
