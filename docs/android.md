@@ -162,3 +162,13 @@ public class Product {
     }
 }
 ```
+
+## Dlaczego findViewById znajduje się w konstruktorze ViewHolder?
+
+findViewById znajduje się w konstruktorze ViewHolder, ponieważ służy do wyszukania elementów widoku, takich jak pola tekstowe, i wystarczy zrobić to tylko raz podczas tworzenia danego wiersza listy.
+
+RecyclerView ponownie wykorzystuje utworzone już widoki podczas przewijania listy. Nie ma więc potrzeby szukania tych samych elementów za każdym razem, gdy wyświetlane są nowe dane.
+
+Gdyby findViewById znajdowało się w onBindViewHolder, byłoby wykonywane wielokrotnie, co niepotrzebnie obciążałoby aplikację i mogłoby spowalniać przewijanie listy.
+
+Dzięki umieszczeniu go w konstruktorze ViewHolder elementy są wyszukiwane tylko raz, a później adapter korzysta z zapamiętanych referencji i zmienia jedynie ich zawartość.
